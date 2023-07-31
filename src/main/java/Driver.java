@@ -1,18 +1,51 @@
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import javax.swing.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class Driver {
-    static File dataSheet;
+    static File dataSheetFile;
     public static void main(String[] args) {
-        do {
-            String filePath = JOptionPane.showInputDialog("Please enter the path to the data sheet\n" +
-                    "/Desktop/Folder1/Folder2/DataSheet.xlsx");
-            if (filePath.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Incorrect file path. Please try again.");
-            } else {
-                dataSheet = new File(filePath);
-            }
-        } while (!dataSheet.canRead());
+        //TODO: uncomment below
+//        do {
+//            String filePath = JOptionPane.showInputDialog("Please enter the path to the data sheet\n" +
+//                    "/Desktop/Folder1/Folder2/DataSheet.xlsx");
+//            if (filePath.isEmpty()) {
+//                JOptionPane.showMessageDialog(null, "Incorrect file path. Please try again.");
+//            } else {
+//                dataSheetFile = new File(filePath);
+//            }
+//        } while (!dataSheetFile.canRead());
+
+        //Create stream to file
+        FileInputStream fis;
+        try {
+            //TODO: Change to datasheetfile
+            fis = new FileInputStream("/Users/coltenglover/Downloads/DataEntry.xlsx");
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(null, "Could not find file.");
+            e.printStackTrace();
+            return;
+        }
+
+        //Use Apache POI to create workbook
+        try {
+            XSSFWorkbook workbook = new XSSFWorkbook(fis);
+            XSSFSheet sheet = workbook.getSheetAt(1);
+            XSSFCell c=  sheet.getRow(2).createCell(19);
+            c.setCellValue("fjkasdfl");
+
+        } catch (IOException e) {
+
+        }
+
 
         String[] options = {"60 - 69", "50 - 59", "40 - 49", "20 - 39"};
 
