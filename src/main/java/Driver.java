@@ -1,12 +1,9 @@
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.swing.*;
-import java.awt.*;
 import java.io.*;
 
 public class Driver {
@@ -21,25 +18,19 @@ public class Driver {
     }
 
     public static void main(String[] args) {
-        //File f = fileChooser.getSelectedFile();
-        //System.out.println(f.getName());
         //TODO: uncomment below
         //TODO: Add file selector, take out paths
         do {
-            String filePath = JOptionPane.showInputDialog("Please enter the path to the data sheet\n" +
-                    "/Desktop/Folder1/Folder2/DataSheet.xlsx");
-            if (filePath.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Incorrect file path. Please try again.");
-            } else {
-                dataSheetFile = new File(filePath);
-            }
+            //Choose the data set
+            JFileChooser fileChooser = new JFileChooser("/Users/coltenglover/Downloads/");
+            fileChooser.showOpenDialog(null);
+            dataSheetFile = fileChooser.getSelectedFile();
         } while (!dataSheetFile.canRead());
 
         //Create stream to file
         FileInputStream fis;
         try {
-            //TODO: Change to datasheetfile
-            fis = new FileInputStream("/Users/coltenglover/Downloads/DataEntry.xlsx");
+            fis = new FileInputStream(dataSheetFile);
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(null, "Could not find file.");
             e.printStackTrace();
@@ -53,12 +44,19 @@ public class Driver {
             //Get Input 1 sheet
             XSSFSheet sheet = workbook.getSheetAt(1);
 
+            //TODO: Change to user settings
+            JFileChooser fileChooser = new JFileChooser("/Users/coltenglover/Desktop");
+            //Present the window
+            fileChooser.showOpenDialog(null);
             //TODO: Find score for each person in BASELINE, 20-39, 1st Test
             for (Row row : sheet) {
                 if (row.getCell(2).getCellType() == CellType.NUMERIC && row.getCell(3).getCellType() == CellType.STRING) {
                     if (row.getCell(2).getNumericCellValue() >= 20 && row.getCell(2).getNumericCellValue() <= 39 && row.getCell(3).getStringCellValue().equals("Baseline")) {
                         //TODO: write the intersection of both x and y
-                        row.createCell(16).setCellValue(getImmediateMemoryScore((int) row.getCell(4).getNumericCellValue(), (int) row.getCell(5).getNumericCellValue()));
+                        //row.createCell(16).setCellValue(getImmediateMemoryScore((int) row.getCell(4)
+                        // .getNumericCellValue(), (int) row.getCell(5).getNumericCellValue(), fileChooser.getSelectedFile()));
+                        getImmediateMemoryScore((int) row.getCell(4).getNumericCellValue(),
+                                (int) row.getCell(5).getNumericCellValue(), fileChooser.getSelectedFile());
                     }
                 }
             }
@@ -165,21 +163,18 @@ public class Driver {
      * @param storyMemory x-value
      * @return Intersection of x and y
      */
-    private static int getImmediateMemoryScore(int listLearning, int storyMemory) {
+    private static int getImmediateMemoryScore(int listLearning, int storyMemory, File table) {
         //TODO: find intersection of both values
         //TODO: implement file explorer
-        JFileChooser fileChooser = new JFileChooser();
-        //TODO: Change to user settings
-        fileChooser.setCurrentDirectory(new File("/Users/coltenglover/Desktop"));
-        //Present the window
-        fileChooser.showOpenDialog(null);
 
         try {
-            FileInputStream fis = new FileInputStream(fileChooser.getSelectedFile());
+            FileInputStream fis = new FileInputStream(table);
             //New workbook for new table
             XSSFWorkbook workbook = new XSSFWorkbook(fis);
             XSSFSheet sheet = workbook.getSheetAt(0);
             Row row = sheet.getRow(listLearning + 1);
+            fis.close();
+            System.out.printf("Returned: %d\n", (int) row.getCell(storyMemory + 1).getNumericCellValue());
             return (int) row.getCell(storyMemory + 1).getNumericCellValue();
         } catch (FileNotFoundException e) {
             JOptionPane.showMessageDialog(null, "File could not be found.", "Error", JOptionPane.ERROR_MESSAGE);
