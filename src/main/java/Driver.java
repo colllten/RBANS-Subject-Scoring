@@ -6,6 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 
 public class Driver {
@@ -20,6 +21,8 @@ public class Driver {
     }
 
     public static void main(String[] args) {
+        //File f = fileChooser.getSelectedFile();
+        //System.out.println(f.getName());
         //TODO: uncomment below
         //TODO: Add file selector, take out paths
         do {
@@ -55,14 +58,14 @@ public class Driver {
                 if (row.getCell(2).getCellType() == CellType.NUMERIC && row.getCell(3).getCellType() == CellType.STRING) {
                     if (row.getCell(2).getNumericCellValue() >= 20 && row.getCell(2).getNumericCellValue() <= 39 && row.getCell(3).getStringCellValue().equals("Baseline")) {
                         //TODO: write the intersection of both x and y
-                        row.createCell(16).setCellValue("Test Value");
-                        FileOutputStream fos = new FileOutputStream("/Users/coltenglover/Downloads/DataEntry.xlsx");
-                        workbook.write(fos);
-                        fos.close();
-                        System.out.println("Wrote the values");
+                        row.createCell(16).setCellValue(getImmediateMemoryScore((int) row.getCell(4).getNumericCellValue(), (int) row.getCell(5).getNumericCellValue()));
                     }
                 }
             }
+            FileOutputStream fos = new FileOutputStream("/Users/coltenglover/Downloads/DataEntry.xlsx");
+            workbook.write(fos);
+            fos.close();
+            System.out.println("Wrote the values");
         } catch (IOException e) {
             e.printStackTrace();
         } catch  (Exception e) {
@@ -165,5 +168,26 @@ public class Driver {
     private static int getImmediateMemoryScore(int listLearning, int storyMemory) {
         //TODO: find intersection of both values
         //TODO: implement file explorer
+        JFileChooser fileChooser = new JFileChooser();
+        //TODO: Change to user settings
+        fileChooser.setCurrentDirectory(new File("/Users/coltenglover/Desktop"));
+        //Present the window
+        fileChooser.showOpenDialog(null);
+
+        try {
+            FileInputStream fis = new FileInputStream(fileChooser.getSelectedFile());
+            //New workbook for new table
+            XSSFWorkbook workbook = new XSSFWorkbook(fis);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            Row row = sheet.getRow(listLearning + 1);
+            return (int) row.getCell(storyMemory + 1).getNumericCellValue();
+        } catch (FileNotFoundException e) {
+            JOptionPane.showMessageDialog(null, "File could not be found.", "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        } catch (IOException e) {
+            //TODO: Do better error handling
+            throw new RuntimeException(e);
+        }
+        return -1;
     }
 }
