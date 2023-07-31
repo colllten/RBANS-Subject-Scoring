@@ -1,12 +1,12 @@
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 
 public class Driver {
     static File dataSheetFile;
@@ -45,11 +45,23 @@ public class Driver {
         try {
             XSSFWorkbook workbook = new XSSFWorkbook(fis);
             XSSFSheet sheet = workbook.getSheetAt(1);
-            XSSFCell c=  sheet.getRow(2).createCell(19);
-            c.setCellValue("fjkasdfl");
-
+            //TODO: Find score for each person in BASELINE, 20-39, 1st Test
+            int count = 0;
+            for (Row row : sheet) {
+                if (row.getCell(2).getCellType() == CellType.NUMERIC && row.getCell(3).getCellType() == CellType.STRING) {
+                    if (row.getCell(2).getNumericCellValue() >= 20 && row.getCell(2).getNumericCellValue() <= 39 && row.getCell(3).getStringCellValue().equals("Baseline")) {
+                        row.createCell(22).setCellValue("Test Value");
+                        FileOutputStream fos = new FileOutputStream("/Users/coltenglover/Downloads/DataEntry.xlsx");
+                        workbook.write(fos);
+                        fos.close();
+                        System.out.println("Wrote the values");
+                    }
+                }
+            }
         } catch (IOException e) {
-
+            e.printStackTrace();
+        } catch  (Exception e) {
+            e.printStackTrace();
         }
 
 
