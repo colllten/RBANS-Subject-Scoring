@@ -10,6 +10,7 @@ import java.io.*;
 
 public class Driver {
     static File dataSheetFile;
+
     private enum TestStage {
         BASELINE, MID, POST
     }
@@ -20,15 +21,16 @@ public class Driver {
 
     public static void main(String[] args) {
         //TODO: uncomment below
-//        do {
-//            String filePath = JOptionPane.showInputDialog("Please enter the path to the data sheet\n" +
-//                    "/Desktop/Folder1/Folder2/DataSheet.xlsx");
-//            if (filePath.isEmpty()) {
-//                JOptionPane.showMessageDialog(null, "Incorrect file path. Please try again.");
-//            } else {
-//                dataSheetFile = new File(filePath);
-//            }
-//        } while (!dataSheetFile.canRead());
+        //TODO: Add file selector, take out paths
+        do {
+            String filePath = JOptionPane.showInputDialog("Please enter the path to the data sheet\n" +
+                    "/Desktop/Folder1/Folder2/DataSheet.xlsx");
+            if (filePath.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Incorrect file path. Please try again.");
+            } else {
+                dataSheetFile = new File(filePath);
+            }
+        } while (!dataSheetFile.canRead());
 
         //Create stream to file
         FileInputStream fis;
@@ -43,14 +45,17 @@ public class Driver {
 
         //Use Apache POI to create workbook
         try {
+            //Represents book containing Excel sheets
             XSSFWorkbook workbook = new XSSFWorkbook(fis);
+            //Get Input 1 sheet
             XSSFSheet sheet = workbook.getSheetAt(1);
+
             //TODO: Find score for each person in BASELINE, 20-39, 1st Test
-            int count = 0;
             for (Row row : sheet) {
                 if (row.getCell(2).getCellType() == CellType.NUMERIC && row.getCell(3).getCellType() == CellType.STRING) {
                     if (row.getCell(2).getNumericCellValue() >= 20 && row.getCell(2).getNumericCellValue() <= 39 && row.getCell(3).getStringCellValue().equals("Baseline")) {
-                        row.createCell(22).setCellValue("Test Value");
+                        //TODO: write the intersection of both x and y
+                        row.createCell(16).setCellValue("Test Value");
                         FileOutputStream fos = new FileOutputStream("/Users/coltenglover/Downloads/DataEntry.xlsx");
                         workbook.write(fos);
                         fos.close();
@@ -149,5 +154,16 @@ public class Driver {
         }
         System.out.printf("Lower: %d\nUpper: %d\nTestType: %s\nTest: %s\n", ageLowerBound, ageUpperBound, testStage,
                 test);
+    }
+
+    /**
+     * Finds intersection of listLearning (y) and storyMemory (x)
+     * @param listLearning y-value
+     * @param storyMemory x-value
+     * @return Intersection of x and y
+     */
+    private static int getImmediateMemoryScore(int listLearning, int storyMemory) {
+        //TODO: find intersection of both values
+        //TODO: implement file explorer
     }
 }
