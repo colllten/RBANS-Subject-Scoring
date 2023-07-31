@@ -1,5 +1,3 @@
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -12,6 +10,14 @@ import java.io.IOException;
 
 public class Driver {
     static File dataSheetFile;
+    private enum TestStage {
+        BASELINE, MID, POST
+    }
+
+    private enum Test {
+        DELAYED_MEMORY, ATTENTION, LANGUAGE, VISUOSPATIAL_CONSTRUCTIONAL, IMMEDIATE_MEMORY
+    }
+
     public static void main(String[] args) {
         //TODO: uncomment below
 //        do {
@@ -52,19 +58,84 @@ public class Driver {
         //Ask for age range
         int choice = JOptionPane.showOptionDialog(null, "What is your age range?", "Age Range",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
-        System.out.println(options[choice]);
+        int ageLowerBound;
+        int ageUpperBound;
+
+        switch (choice) {
+            case 3 -> {
+                ageLowerBound = 20;
+                ageUpperBound = 39;
+            }
+            case 2 -> {
+                ageLowerBound = 40;
+                ageUpperBound = 49;
+            }
+            case 1 -> {
+                ageLowerBound = 50;
+                ageUpperBound = 59;
+            }
+            case 0 -> {
+                ageLowerBound = 60;
+                ageUpperBound = 69;
+            }
+            default -> {
+                //TODO: Add error handling
+                ageLowerBound = 0;
+                ageUpperBound = 1;
+            }
+        }
 
         //Ask for time
         options = new String[]{"Post", "Mid", "Baseline"};
         choice = JOptionPane.showOptionDialog(null, "What test stage?", "Test Stage",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
-        System.out.println(options[choice]);
+
+
+        TestStage testStage;
+        switch (choice) {
+            case 2 -> {
+                testStage = TestStage.BASELINE;
+            }
+            case 1 -> {
+                testStage = TestStage.MID;
+            }
+            case 0 -> {
+                testStage = TestStage.POST;
+            }
+            default -> {
+                //TODO: Add error handling
+                testStage = TestStage.POST;
+            }
+        }
 
         //Ask for kind of test
         options = new String[]{"Delayed Memory", "Attention", "Language", "Visuospatial/Constructional", "Immediate " +
                 "Memory"};
         choice = JOptionPane.showOptionDialog(null, "What is the test type?", "Test Type",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
-        System.out.println(options[choice]);
+        Test test;
+        switch (choice) {
+            case 4 -> {
+                test = Test.IMMEDIATE_MEMORY;
+            }
+            case 3 -> {
+                test = Test.VISUOSPATIAL_CONSTRUCTIONAL;
+            }
+            case 2 -> {
+                test = Test.LANGUAGE;
+            }
+            case 1 -> {
+                test = Test.ATTENTION;
+            }
+            case 0 -> {
+                test = Test.DELAYED_MEMORY;
+            }
+            default -> {
+                //TODO: Add error handling
+                test = Test.IMMEDIATE_MEMORY;
+            }
+        }
+        System.out.printf("Lower: %d\nUpper: %d\nTestType: %s\nTest: %s\n", ageLowerBound, ageUpperBound, testStage,
+                test);
     }
 }
