@@ -29,6 +29,7 @@ public class Driver {
                 @Override
                 public void run() {
                     do {
+                        //Prompt user to select the excel file where participant's scores are
                         JOptionPane.showMessageDialog(null, "Choose the excel file where subject data is stored", "Welcome",
                                 JOptionPane.PLAIN_MESSAGE);
                         //Choose the data set
@@ -37,6 +38,7 @@ public class Driver {
                         FileNameExtensionFilter filter = new FileNameExtensionFilter("XLSX", "xlsx");
                         fileChooser.setFileFilter(filter);
                         fileChooser.setDialogTitle("Choose data Excel file");
+                        //Displays the GUI
                         fileChooser.showOpenDialog(null);
                         dataSheetFile = fileChooser.getSelectedFile();
                     } while (!dataSheetFile.canRead());
@@ -58,6 +60,7 @@ public class Driver {
                         //Get Input 1 sheet
                         XSSFSheet sheet = workbook.getSheetAt(1);
 
+                        //Prompt user to pick the desired table
                         JOptionPane.showMessageDialog(null, "Choose the table for your test and age group (Baseline, " +
                                 "Test 1, 20-39)");
                         //TODO: Change to user settings
@@ -74,6 +77,7 @@ public class Driver {
                                 }
                             }
                         }
+                        //Write all changes back to the file
                         FileOutputStream fos = new FileOutputStream(dataSheetFile);
                         workbook.write(fos);
                         fos.close();
