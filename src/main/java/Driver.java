@@ -20,9 +20,7 @@ public class Driver {
     }
 
     public static void main(String[] args) {
-        //TODO: uncomment below
         //TODO: Add file selector, take out paths
-        //TODO: Swing is not thread-safe
 
         try {
             EventQueue.invokeAndWait(new Runnable() {
@@ -65,9 +63,10 @@ public class Driver {
                                 "Test 1, 20-39)");
                         //TODO: Change to user settings
                         JFileChooser fileChooser = new JFileChooser("/Users/coltenglover/Desktop");
-                        //Present the window
+                        //Present the file chooser window
                         fileChooser.showOpenDialog(null);
                         //TODO: Find score for each person in BASELINE, 20-39, 1st Test
+                        //Iterate through every row
                         for (Row row : sheet) {
                             if (row.getCell(2).getCellType() == CellType.NUMERIC && row.getCell(3).getCellType() == CellType.STRING) {
                                 if (row.getCell(2).getNumericCellValue() >= 20 && row.getCell(2).getNumericCellValue() <= 39 && row.getCell(3).getStringCellValue().equals("Baseline")) {
