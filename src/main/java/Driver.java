@@ -9,6 +9,8 @@ import java.awt.*;
 import java.io.*;
 
 public class Driver {
+
+    //Where subjects' scores are stored
     static File dataSheetFile;
 
     private enum TestStage {
@@ -21,26 +23,14 @@ public class Driver {
 
     public static void main(String[] args) {
         //TODO: Add file selector, take out paths
+        //TODO: Add logging
 
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
-                    do {
-                        //Prompt user to select the excel file where participant's scores are
-                        JOptionPane.showMessageDialog(null, "Choose the excel file where subject data is stored", "Welcome",
-                                JOptionPane.PLAIN_MESSAGE);
-                        //Choose the data set
-                        JFileChooser fileChooser = new JFileChooser("/Users/coltenglover/Downloads/");
-                        //Filter for Excel files only
-                        FileNameExtensionFilter filter = new FileNameExtensionFilter("XLSX", "xlsx");
-                        fileChooser.setFileFilter(filter);
-                        fileChooser.setDialogTitle("Choose data Excel file");
-                        //Displays the GUI
-                        fileChooser.showOpenDialog(null);
-                        dataSheetFile = fileChooser.getSelectedFile();
-                    } while (!dataSheetFile.canRead());
-
+                    //Set the dataSheetFile to the MS Excel sheet holding all subject data
+                    setSubjectsDataFile();
                     //Open stream to data file
                     FileInputStream fis;
                     try {
@@ -205,6 +195,29 @@ public class Driver {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    /**
+     * Prompts user to select the file where all subjects scores are listed for each test. The selected file must be
+     * a Microsoft Excel file (xlsx) and is used throughout the remainder of the program.
+     */
+    static void setSubjectsDataFile() {
+        do {
+            //Prompt user to select the excel file where participant's scores are
+            JOptionPane.showMessageDialog(null, "Choose the excel file where subject data is stored", "Welcome",
+                    JOptionPane.PLAIN_MESSAGE);
+            //Choose the data set
+            //TODO: Change path
+            JFileChooser fileChooser = new JFileChooser("/Users/coltenglover/Downloads/");
+            //Filter for Excel files only
+            fileChooser.setFileFilter(new FileNameExtensionFilter("XLSX", "xlsx"));
+            fileChooser.setDialogTitle("Choose data Excel file");
+            //Displays the GUI
+            fileChooser.showOpenDialog(null);
+            dataSheetFile = fileChooser.getSelectedFile();
+            if (!dataSheetFile.canRead()) {
+                JOptionPane.showMessageDialog(null, "Error: File is unreadable", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } while (!dataSheetFile.canRead());
     }
 }
