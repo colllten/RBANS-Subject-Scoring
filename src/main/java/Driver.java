@@ -11,7 +11,7 @@ import java.io.*;
 public class Driver {
 
     //Where subjects' scores are stored
-    static File dataSheetFile;
+    static File dataSheetFile = new File("/Users/coltenglover/Desktop/SubjectData/DataEntry.xlsx");
 
     private enum TestStage {
         BASELINE, MID, POST
@@ -24,19 +24,25 @@ public class Driver {
     public static void main(String[] args) {
         //TODO: Add file selector, take out paths
         //TODO: Add logging
-
         try {
             EventQueue.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {
+
                     //Set the dataSheetFile to the MS Excel sheet holding all subject data
-                    setSubjectsDataFile();
-                    //Open stream to data file
+                    //TODO: Uncomment this
+                    //setSubjectsDataFile();
+
+                    //Open input stream to data file
                     FileInputStream fis;
                     try {
-                        fis = new FileInputStream(dataSheetFile);
+                        fis = new FileInputStream(dataSheetFile); //Stream to the subject's data
                     } catch (FileNotFoundException e) {
                         JOptionPane.showMessageDialog(null, "Could not find file.");
+                        e.printStackTrace();
+                        return;
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(null, "An unexpected error ocurred.");
                         e.printStackTrace();
                         return;
                     }
@@ -45,24 +51,62 @@ public class Driver {
                     try {
                         //Represents book containing Excel sheets
                         XSSFWorkbook workbook = new XSSFWorkbook(fis);
-                        //Get Input 1 sheet
-                        XSSFSheet sheet = workbook.getSheetAt(1);
+                        //Get Input 1 subjectDataSheet because index 0 contains notes
+                        //TODO: Take out '1' and let user choose where the sheet is located, or ask Emily to remove index 0
+                        XSSFSheet subjectDataSheet = workbook.getSheetAt(1);
+
+                        //TODO: Start reading tables
+                        //Subject's data starts on 3rd row (index 2)
+                        for (int i = 2; i <= subjectDataSheet.getLastRowNum(); i++) { //iterate over rows
+                            int age = Integer.parseInt(subjectDataSheet.getRow(i).getCell(2).getRawValue());
+
+                            //Time/Test (Baseline, Mid, Post)
+                            String time = subjectDataSheet.getRow(i).getCell(3).getStringCellValue();
+                            //Manipulate time to have capital letter, lowercase remainder
+                            time = time.toUpperCase().charAt(0) + time.substring(1).toLowerCase();
+
+                            int listLearning = 0;
+                            int storyMemory = 0;
+                            try {
+                                //Get List Learning score (y)
+                                listLearning = (int) subjectDataSheet.getRow(i).getCell(4).getNumericCellValue();
+
+                                //Get Story Memory score (x)
+                                storyMemory = (int) subjectDataSheet.getRow(i).getCell(5).getNumericCellValue();
+                            } catch (IllegalStateException e) {
+                                System.err.println(e.getMessage());
+                                System.err.printf("Encountered: %s%n", subjectDataSheet.getRow(i).getCell(4).getStringCellValue());
+                                continue;
+                            }
+
+                            XSSFWorkbook indexScoreTable = null;
+
+                            if (age <= 39) {
+                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/20-39-" + time +".xlsx"));
+                            } else if (age <= 49) {
+                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/40-49-" + time +".xlsx"));
+                            } else if (age <= 59) {
+                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/50-59-" + time +".xlsx"));
+                            } else if (age <= 69) {
+                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/60-69-" + time +".xlsx"));
+                            }
+
+                            XSSFSheet table = indexScoreTable.getSheetAt(0);
+                            int score = (int) table.getRow(listLearning + 1).getCell(storyMemory + 1).getNumericCellValue();
+                        }
+
+
 
                         //Prompt user to pick the desired table
                         JOptionPane.showMessageDialog(null, "Choose the table for your test and age group (Baseline, " +
                                 "Test 1, 20-39)");
-                        //TODO: Change to user settings
-                        JFileChooser fileChooser = new JFileChooser("/Users/coltenglover/Desktop");
-                        //Present the file chooser window
-                        fileChooser.showOpenDialog(null);
-                        //TODO: Find score for each person in BASELINE, 20-39, 1st Test
                         //Iterate through every row
-                        for (Row row : sheet) {
+                        for (Row row : subjectDataSheet) {
                             if (row.getCell(2).getCellType() == CellType.NUMERIC && row.getCell(3).getCellType() == CellType.STRING) {
                                 if (row.getCell(2).getNumericCellValue() >= 20 && row.getCell(2).getNumericCellValue() <= 39 && row.getCell(3).getStringCellValue().equals("Baseline")) {
                                     //TODO: write the intersection of both x and y
-                                    row.createCell(16).setCellValue(getImmediateMemoryScore((int) row.getCell(4)
-                                            .getNumericCellValue(), (int) row.getCell(5).getNumericCellValue(), fileChooser.getSelectedFile()));
+//                                    row.createCell(16).setCellValue(getImmediateMemoryScore((int) row.getCell(4)
+//                                            .getNumericCellValue(), (int) row.getCell(5).getNumericCellValue(), fileChooser.getSelectedFile()));
                                 }
                             }
                         }
@@ -175,12 +219,10 @@ public class Driver {
                     //TODO: implement file explorer
 
                     try {
-                        FileInputStream fis = new FileInputStream(table);
                         //New workbook for new table
-                        XSSFWorkbook workbook = new XSSFWorkbook(fis);
+                        XSSFWorkbook workbook = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/Baseline/20-39-Baseline.xlsx"));
                         XSSFSheet sheet = workbook.getSheetAt(0);
                         Row row = sheet.getRow(listLearning + 1);
-                        fis.close();
                         return (int) row.getCell(storyMemory + 1).getNumericCellValue();
                     } catch (FileNotFoundException e) {
                         JOptionPane.showMessageDialog(null, "File could not be found.", "Error", JOptionPane.ERROR_MESSAGE);
