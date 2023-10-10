@@ -1,4 +1,3 @@
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -7,19 +6,13 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.*;
+import java.util.Objects;
 
 public class Driver {
 
     //Where subjects' scores are stored
+    //TODO: Change location
     static File dataSheetFile = new File("/Users/coltenglover/Desktop/SubjectData/DataEntry.xlsx");
-
-    private enum TestStage {
-        BASELINE, MID, POST
-    }
-
-    private enum Test {
-        DELAYED_MEMORY, ATTENTION, LANGUAGE, VISUOSPATIAL_CONSTRUCTIONAL, IMMEDIATE_MEMORY
-    }
 
     public static void main(String[] args) {
         //TODO: Add file selector, take out paths
@@ -57,11 +50,12 @@ public class Driver {
 
                         //TODO: Start reading tables
                         //Subject's data starts on 3rd row (index 2)
-                        for (int i = 2; i <= subjectDataSheet.getLastRowNum(); i++) { //iterate over rows
-                            int age = Integer.parseInt(subjectDataSheet.getRow(i).getCell(2).getRawValue());
+                        //TODO: Change back to <= subjectDataSheet.getLastRowNum()
+                        for (int i = 2; i <= 81; i++) { //iterate over rows
+                            int age = Integer.parseInt(subjectDataSheet.getRow(i).getCell(ColumnLabels.AGE_COLUMN).getRawValue());
 
                             //Time/Test (Baseline, Mid, Post)
-                            String time = subjectDataSheet.getRow(i).getCell(3).getStringCellValue();
+                            String time = subjectDataSheet.getRow(i).getCell(ColumnLabels.TEST_TIME).getStringCellValue();
                             //Manipulate time to have capital letter, lowercase remainder
                             time = time.toUpperCase().charAt(0) + time.substring(1).toLowerCase();
 
@@ -69,143 +63,44 @@ public class Driver {
                             int storyMemory = 0;
                             try {
                                 //Get List Learning score (y)
-                                listLearning = (int) subjectDataSheet.getRow(i).getCell(4).getNumericCellValue();
+                                listLearning = (int) subjectDataSheet.getRow(i).getCell(ColumnLabels.LIST_LEARNING).getNumericCellValue();
 
                                 //Get Story Memory score (x)
-                                storyMemory = (int) subjectDataSheet.getRow(i).getCell(5).getNumericCellValue();
+                                storyMemory = (int) subjectDataSheet.getRow(i).getCell(ColumnLabels.STORY_MEMORY).getNumericCellValue();
                             } catch (IllegalStateException e) {
                                 System.err.println(e.getMessage());
-                                System.err.printf("Encountered: %s%n", subjectDataSheet.getRow(i).getCell(4).getStringCellValue());
+                                System.err.printf("Encountered: %s%n", subjectDataSheet.getRow(i).getCell(ColumnLabels.LIST_LEARNING).getStringCellValue());
                                 continue;
                             }
 
                             XSSFWorkbook indexScoreTable = null;
 
                             if (age <= 39) {
-                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/20-39-" + time +".xlsx"));
+                                indexScoreTable = new XSSFWorkbook(Objects.requireNonNull(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/20-39-" + time + ".xlsx")));
                             } else if (age <= 49) {
-                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/40-49-" + time +".xlsx"));
+                                indexScoreTable = new XSSFWorkbook(Objects.requireNonNull(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/40-49-" + time + ".xlsx")));
                             } else if (age <= 59) {
-                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/50-59-" + time +".xlsx"));
+                                indexScoreTable = new XSSFWorkbook(Objects.requireNonNull(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/50-59-" + time + ".xlsx")));
                             } else if (age <= 69) {
-                                indexScoreTable = new XSSFWorkbook(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/60-69-" + time +".xlsx"));
+                                indexScoreTable = new XSSFWorkbook(Objects.requireNonNull(Driver.class.getClassLoader().getResourceAsStream("IndexScoreTables/" + time + "/60-69-" + time + ".xlsx")));
                             }
 
                             XSSFSheet table = indexScoreTable.getSheetAt(0);
                             int score = (int) table.getRow(listLearning + 1).getCell(storyMemory + 1).getNumericCellValue();
+
+                            //Write score to column
+                            subjectDataSheet.getRow(i).getCell(ColumnLabels.IMMEDIATE_MEMORY_COLUMN).setCellValue(score);
+                            FileOutputStream fos = new FileOutputStream("/Users/coltenglover/Desktop/SubjectData/DataEntry.xlsx");
+                            workbook.write(fos);
+                            fos.close();
                         }
-
-
-
-                        //Prompt user to pick the desired table
-                        JOptionPane.showMessageDialog(null, "Choose the table for your test and age group (Baseline, " +
-                                "Test 1, 20-39)");
-                        //Iterate through every row
-                        for (Row row : subjectDataSheet) {
-                            if (row.getCell(2).getCellType() == CellType.NUMERIC && row.getCell(3).getCellType() == CellType.STRING) {
-                                if (row.getCell(2).getNumericCellValue() >= 20 && row.getCell(2).getNumericCellValue() <= 39 && row.getCell(3).getStringCellValue().equals("Baseline")) {
-                                    //TODO: write the intersection of both x and y
-//                                    row.createCell(16).setCellValue(getImmediateMemoryScore((int) row.getCell(4)
-//                                            .getNumericCellValue(), (int) row.getCell(5).getNumericCellValue(), fileChooser.getSelectedFile()));
-                                }
-                            }
-                        }
-                        //Write all changes back to the file
-                        FileOutputStream fos = new FileOutputStream(dataSheetFile);
-                        workbook.write(fos);
-                        fos.close();
-                        System.out.println("Wrote the values");
+                        System.out.println("Finished writing scores!");
+                        workbook.close();
                     } catch (IOException e) {
                         e.printStackTrace();
                     } catch  (Exception e) {
                         e.printStackTrace();
                     }
-
-
-                    String[] options = {"60 - 69", "50 - 59", "40 - 49", "20 - 39"};
-
-                    //Ask for age range
-                    int choice = JOptionPane.showOptionDialog(null, "What is your age range?", "Age Range",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
-                    int ageLowerBound;
-                    int ageUpperBound;
-
-                    switch (choice) {
-                        case 3 -> {
-                            ageLowerBound = 20;
-                            ageUpperBound = 39;
-                        }
-                        case 2 -> {
-                            ageLowerBound = 40;
-                            ageUpperBound = 49;
-                        }
-                        case 1 -> {
-                            ageLowerBound = 50;
-                            ageUpperBound = 59;
-                        }
-                        case 0 -> {
-                            ageLowerBound = 60;
-                            ageUpperBound = 69;
-                        }
-                        default -> {
-                            //TODO: Add error handling
-                            ageLowerBound = 0;
-                            ageUpperBound = 1;
-                        }
-                    }
-
-                    //Ask for time
-                    options = new String[]{"Post", "Mid", "Baseline"};
-                    choice = JOptionPane.showOptionDialog(null, "What test stage?", "Test Stage",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
-
-
-                    TestStage testStage;
-                    switch (choice) {
-                        case 2 -> {
-                            testStage = TestStage.BASELINE;
-                        }
-                        case 1 -> {
-                            testStage = TestStage.MID;
-                        }
-                        case 0 -> {
-                            testStage = TestStage.POST;
-                        }
-                        default -> {
-                            //TODO: Add error handling
-                            testStage = TestStage.POST;
-                        }
-                    }
-
-                    //Ask for kind of test
-                    options = new String[]{"Delayed Memory", "Attention", "Language", "Visuospatial/Constructional", "Immediate " +
-                            "Memory"};
-                    choice = JOptionPane.showOptionDialog(null, "What is the test type?", "Test Type",
-                            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
-                    Test test;
-                    switch (choice) {
-                        case 4 -> {
-                            test = Test.IMMEDIATE_MEMORY;
-                        }
-                        case 3 -> {
-                            test = Test.VISUOSPATIAL_CONSTRUCTIONAL;
-                        }
-                        case 2 -> {
-                            test = Test.LANGUAGE;
-                        }
-                        case 1 -> {
-                            test = Test.ATTENTION;
-                        }
-                        case 0 -> {
-                            test = Test.DELAYED_MEMORY;
-                        }
-                        default -> {
-                            //TODO: Add error handling
-                            test = Test.IMMEDIATE_MEMORY;
-                        }
-                    }
-                    System.out.printf("Lower: %d\nUpper: %d\nTestType: %s\nTest: %s\n", ageLowerBound, ageUpperBound, testStage,
-                            test);
                 }
 
                 /**
